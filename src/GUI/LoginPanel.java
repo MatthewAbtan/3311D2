@@ -1,3 +1,5 @@
+package GUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -139,9 +141,9 @@ public class LoginPanel extends JPanel {
                 actionMessage.setText("ACCOUNT CREATION SUCCESS(will add it to a database later)");
             } else {
                 // Simulate login success
-                switchTo.accept("UserDashboard");
+                switchTo.accept("GUI.UserDashboard");
                 if (userTypeDropdown.getSelectedItem().equals("Manager")) {
-                    switchTo.accept("ManagementDashboard");
+                    switchTo.accept("GUI.ManagementDashboard");
                 }
             }
 

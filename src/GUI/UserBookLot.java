@@ -1,3 +1,5 @@
+package GUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -24,7 +26,7 @@ public class UserBookLot extends JPanel {
         JButton backButton = new JButton("Back to Dashboard");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 18));
         add(backButton, BorderLayout.NORTH);
-        backButton.addActionListener(e -> switchTo.accept("UserDashboard"));
+        backButton.addActionListener(e -> switchTo.accept("GUI.UserDashboard"));
 
 
         // creating a split pane to hold parts of this view

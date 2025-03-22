@@ -1,3 +1,5 @@
+package GUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
@@ -23,7 +25,7 @@ public class UserDashboard extends JPanel {
 
         // add buttons
         buttonPanel.add(Box.createVerticalStrut(50)); // spacing
-        addDashboardButton(buttonPanel, "Create Booking", "UserBookLot");
+        addDashboardButton(buttonPanel, "Create Booking", "GUI.UserBookLot");
         buttonPanel.add(Box.createVerticalStrut(50)); // spacing
         addDashboardButton(buttonPanel, "My Bookings", "UserBookings");
         buttonPanel.add(Box.createVerticalStrut(50)); // spacing
