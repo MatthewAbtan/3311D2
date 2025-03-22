@@ -1,15 +1,49 @@
 package System;
 
+import java.util.*;
+import java.util.regex.*;
+
 abstract class User {
-    protected String username;
+    protected String username; //Username here is actually the email involved, we can leave it names "username" or change to "email"
     protected String password;
     protected boolean approved;
     protected int rate;
+    
+    private static List<String> registeredUsernames = new ArrayList<>();
 
     public User(String username, String password) {
-        this.username = username;
-        this.password = password;
+        this.username = validateUsername(username);
+        this.password = validatePassword(password);
     }
+    
+    private String validateUsername(String username) {
+    	//This is actually validation for our email
+    	if (username == null || username.isEmpty()) {
+    		throw new IllegalArgumentException("Email can not be empty");
+    	}
+    	if (registeredUsernames.contains(username)) {
+    		throw new IllegalArgumentException("Email is already taken");
+    	}
+    	
+    	String usernameConditions = "^[A-Za-z0-9+_.-]+@(.+)$";
+    	
+    	if (!Pattern.matches(usernameConditions, username)) {
+    		throw new IllegalArgumentException("Invalid Email Format");
+    	}
+    	
+    	registeredUsernames.add(username);
+    	
+    	return username;
+    }
+    
+    private String validatePassword(String password) {
+        String passwordConditions = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!Pattern.matches(passwordConditions, password)) {
+            throw new IllegalArgumentException("Password must be at least 8 characters and contain an uppercase, number and symbol.");
+        }
+        return password;
+    }
+    
     public String getUsername() {
         return username;
     }
