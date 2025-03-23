@@ -33,4 +33,9 @@ public class MainSystem {
             pendingUsers.add(userFactory.createUser(type, username, password));
         }
     }
+    public boolean isRegistered(String username){
+        //if name is registered return true, else reutrn false
+        //made it reutnr false for now
+        return false;
+    }
 }
