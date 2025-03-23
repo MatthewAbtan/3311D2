@@ -5,9 +5,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.function.Consumer;
+import System.MainSystem;
 
 public class LoginPanel extends JPanel {
-
+    private final MainSystem mainSystem;
     private JComboBox<String> userTypeDropdown;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -19,7 +20,8 @@ public class LoginPanel extends JPanel {
     private boolean isRegisterMode = false;
     private Consumer<String> switchTo;
 
-    public LoginPanel(Consumer<String> switchTo) {
+    public LoginPanel(Consumer<String> switchTo, MainSystem mainSystem) {
+        this.mainSystem = mainSystem;
         //method for switching panels
         this.switchTo = switchTo;
         // main layout, using box to center everything vertically
@@ -95,7 +97,6 @@ public class LoginPanel extends JPanel {
         actionMessage = new JLabel("", JLabel.CENTER);
         actionMessage.setFont(new Font("SansSerif", Font.BOLD, 14));
         actionMessage.setAlignmentX(CENTER_ALIGNMENT);
-        actionMessage.setForeground(new Color(0, 128, 0)); // Green text for success
         actionMessage.setVisible(false); // Initially hidden
         add(actionMessage);
 
@@ -136,20 +137,43 @@ public class LoginPanel extends JPanel {
     private class SubmitButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (isRegisterMode) {
-                // Simulate account creation success
-                actionMessage.setText("ACCOUNT CREATION SUCCESS(will add it to a database later)");
-            } else {
-                // Simulate login success
+            //the following if pervents empty fields and auto-ends the method if empty
+            if (usernameField.getText().isEmpty() || passwordField.getText().isEmpty()) {
+                actionMessage.setText("Please fill in all fields.");
+                actionMessage.setForeground(new Color(128, 0, 0));
+                displayMessage();
+                return;
+            }
+            if (isRegisterMode) {//they are registering
+                if(mainSystem.isRegistered(usernameField.getText())){
+                    actionMessage.setText("Username already exists, please try again.");
+                    actionMessage.setForeground(new Color(128, 0, 0));
+                    displayMessage();
+                }else{
+                    if(userTypeDropdown.getSelectedItem().equals("Visitor")){
+                        actionMessage.setText("Visitor account created, please login to continue.");
+                    }else{
+                        actionMessage.setText(userTypeDropdown.getSelectedItem() + " account created, requires approval from administrator.");
+                    }
+                    actionMessage.setForeground(new Color(0, 128, 0));
+                    displayMessage();
+                }
+            } else { //they are logging in
+                // simulate login success
                 switchTo.accept("GUI.UserDashboard");
-                if (userTypeDropdown.getSelectedItem().equals("Manager")) {
+                if (userTypeDropdown.getSelectedItem().equals("Manager")) {//logging in as maanger
                     switchTo.accept("GUI.ManagementDashboard");
                 }
             }
-
-            // Show the message below the toggle button
-            actionMessage.setVisible(true);
         }
+    }
+
+    //method for making the message show and go away after two second
+    public void displayMessage() {
+        actionMessage.setVisible(true);
+        Timer timer = new Timer(2000, event -> actionMessage.setVisible(false));
+        timer.setRepeats(false);
+        timer.start();
     }
 
 }
