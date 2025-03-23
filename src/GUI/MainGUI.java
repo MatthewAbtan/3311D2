@@ -25,7 +25,7 @@ public class MainGUI extends JFrame{
         this.mainSystem = MainSystem.getInstance();
 
         //adding all the panels for different parts of the GUI
-        mainPanel.add(new LoginPanel(this::switchTo),"Login");
+        mainPanel.add(new LoginPanel(this::switchTo, mainSystem),"Login");
         mainPanel.add(new UserDashboard(this::switchTo),"GUI.UserDashboard");
         mainPanel.add(new UserBookLot(this::switchTo),"GUI.UserBookLot");
         mainPanel.add(new UserBookingsView(this::switchTo),"UserBookings");
