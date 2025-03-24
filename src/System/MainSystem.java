@@ -34,8 +34,18 @@ public class MainSystem {
         }
     }
     public boolean isRegistered(String username){
-        //if name is registered return true, else reutrn false
-        //made it reutnr false for now
-        return false;
+    	//If a user is already registered (or pending), return true else return false
+    	for (User user : approvedUsers) {
+    		if (user.getUsername().equals(username)) {
+    			return true;
+    		}
+    	}
+    	//This is the condition we can decide to keep or remove depending on if we want to count pending users as registered.
+    	for (User user : pendingUsers) {
+    		if (user.getUsername().equals(username)) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 }
