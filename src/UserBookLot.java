@@ -25,7 +25,6 @@ public class UserBookLot extends JPanel {
     private User currentUser;
 
 
-
     public UserBookLot(Consumer<String> switchTo) {
         this.currentUser = MainSystem.currentUser;
 
@@ -60,7 +59,7 @@ public class UserBookLot extends JPanel {
 
         //adding lots
         for (ParkingLot lot : parkingLots) {
-            if(lot.getEnabled()){// only show user the lot if its enabled
+            if (lot.getEnabled()) {// only show user the lot if its enabled
                 lotListModel.addElement(lot.getLotName());
             }
         }
@@ -142,7 +141,7 @@ public class UserBookLot extends JPanel {
             ParkingSpace[] spaces = parkingLots.get(lot).getSpaces();
             for (ParkingSpace space : spaces) {
                 JButton bt = new JButton(String.valueOf(space.getIndex()));
-                if(space.getState().getClass().getSimpleName().equals("EmptyState")){
+                if (space.getState().getClass().getSimpleName().equals("EmptyState")) {
                     bt.setBackground(GREEN);
                     bt.addActionListener(new ActionListener() {
                         @Override
@@ -162,7 +161,7 @@ public class UserBookLot extends JPanel {
 
                         }
                     });
-                }else if(space.getState().getClass().getSimpleName().equals("MaintenanceState")){
+                } else if (space.getState().getClass().getSimpleName().equals("MaintenanceState")) {
                     bt.setBackground(Color.ORANGE);
                     bt.addActionListener(new ActionListener() {
                         @Override
@@ -170,14 +169,36 @@ public class UserBookLot extends JPanel {
                             JOptionPane.showMessageDialog(null, "Space is under maintenance");
                         }
                     });
-                }else if(space.getState().getClass().getSimpleName().equals("OccupiedState")){
+                } else if (space.getState().getClass().getSimpleName().equals("OccupiedState")) {
                     bt.setBackground(RED);
-                    bt.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            JOptionPane.showMessageDialog(null, "Space is already occupied");
+                    Booking booking = parkingLots.get(lot).getBooking(space.getIndex());
+                    if (booking != null) {
+                        long currentTime = System.currentTimeMillis();
+                        long bookingTime = booking.getBookingTime();
+                        long oneMinute = 60 * 1000; // 1 minute in milliseconds
+                        if (currentTime - bookingTime > oneMinute) {
+                            bt.setEnabled(false);
+                            bt.setText("No-show");
+                        } else {
+                            bt.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    int result = JOptionPane.showConfirmDialog(
+                                            null,
+                                            "Do you want to check out of this space?",
+                                            "Check Out",
+                                            JOptionPane.YES_NO_OPTION
+                                    );
+
+                                    // Step 2: If user clicks "Yes"
+                                    if (result == JOptionPane.YES_OPTION) {
+                                        // Call the checkOut method
+                                        checkOut(lot, space.getIndex());
+                                    }
+                                }
+                            });
                         }
-                    });
+                    }
                 }
                 bt.setOpaque(true);
                 bt.setBorderPainted(false);
@@ -190,6 +211,7 @@ public class UserBookLot extends JPanel {
         spacePanel.revalidate();
         spacePanel.repaint();
     }
+
     // method for showing payment box
     public void displayBookingForm(int lot, int spaceIndex) {
         JDialog dialog = new JDialog((Frame) null, "Enter Booking Details", true);
@@ -261,6 +283,10 @@ public class UserBookLot extends JPanel {
                 double totalCost = currentUser.getRate() * duration;
                 double deposit = currentUser.getRate() * 1;
 
+                // Store the booking details, including the deposit amount
+                Booking booking = new Booking(spaceIndex, carInfo, paymentInfo, duration, totalCost, deposit);
+                parkingLots.get(lot).addBooking(booking);
+
                 String confirmationMessage = String.format(
                         "Booking Confirmed!\n\n" +
                                 "Space: #%d\n" +
@@ -291,4 +317,61 @@ public class UserBookLot extends JPanel {
         dialog.setVisible(true);
     }
 
+    // Method to check in
+    public void checkIn(int lot, int spaceIndex) {
+        Booking booking = parkingLots.get(lot).getBooking(spaceIndex);
+        if (booking != null) {
+            // Check if the user is within the first hour of the booked parking period
+            long currentTime = System.currentTimeMillis();
+            long bookingTime = booking.getBookingTime();
+            //long oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+            long oneHour = 60 * 1000; // modified to 1 min for testing purposes
+            if (currentTime - bookingTime > oneHour) {
+                // Consider it a no-show and do not refund the deposit
+                JOptionPane.showMessageDialog(null, "No-show detected. Deposit will not be refunded.");
+            } else {
+                // Check in the user
+                parkingLots.get(lot).setSpace(spaceIndex, "OccupiedState", MainSystem.currentUser.getUsername(), booking.getCarInfo());
+                mainSystem.updateFile("data/parkingSpaceData.csv");
+                loadSpacesForLot(lot);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No booking found for this space.");
+        }
+    }
+
+    // Method to check out
+    public void checkOut(int lot, int spaceIndex) {
+        Booking booking = parkingLots.get(lot).getBooking(spaceIndex);
+        if (booking != null) {
+            // Check if the user is a no-show
+            long currentTime = System.currentTimeMillis();
+            long bookingTime = booking.getBookingTime();
+            long oneMinute = 60 * 1000; // 1 minute in milliseconds
+            if (currentTime - bookingTime > oneMinute) {
+                // No-show detected, do not refund the deposit
+                JOptionPane.showMessageDialog(null, "No-show detected. Deposit will not be refunded.");
+                return;
+            }
+
+            // Calculate the total cost, deducting the deposit
+            double totalCost = booking.getTotalCost() - booking.getDeposit();
+            String confirmationMessage = String.format(
+                    "Checkout Confirmed!\n\n" +
+                            "Space: #%d\n" +
+                            "Car: %s\n" +
+                            "Total Cost: $%.2f",
+                    spaceIndex, booking.getCarInfo(), totalCost
+            );
+            JOptionPane.showMessageDialog(null, confirmationMessage, "Checkout Confirmation", JOptionPane.INFORMATION_MESSAGE);
+
+            // Update the booking status and remove the booking
+            parkingLots.get(lot).removeBooking(spaceIndex);
+            parkingLots.get(lot).setSpace(spaceIndex, "EmptyState", "", "");
+            mainSystem.updateFile("data/parkingSpaceData.csv");
+            loadSpacesForLot(lot);
+        } else {
+            JOptionPane.showMessageDialog(null, "No booking found for this space.");
+        }
+    }
 }
