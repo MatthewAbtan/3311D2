@@ -228,12 +228,12 @@ public class UserBookLot extends JPanel {
     // method for showing payment box
     public void displayBookingForm(int lot, int spaceIndex) {
         JDialog dialog = new JDialog((Frame) null, "Enter Booking Details", true);
-        dialog.setSize(400, 250);
-        dialog.setLayout(new GridLayout(5, 2, 10, 10));
+        dialog.setSize(400, 350);
+        dialog.setLayout(new GridLayout(7, 2, 10, 10));
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         JTextField carInfoField = new JTextField();
-        JTextField paymentField = new JTextField();
+        JTextField emailField = new JTextField();
 
         JTextField durationField = new JTextField(5);
         JLabel totalCostLabel = new JLabel("Total Cost: $0");
@@ -267,16 +267,23 @@ public class UserBookLot extends JPanel {
 
         dialog.add(new JLabel("Car Info (license plate):"));
         dialog.add(carInfoField);
+
+        // Payment method selection
+        String[] paymentMethods = {"Credit Card", "Debit Card", "Mobile Payment"};
+        JComboBox<String> paymentMethodComboBox = new JComboBox<>(paymentMethods);
+        dialog.add(new JLabel("Payment Method:"));
+        dialog.add(paymentMethodComboBox);
+
         dialog.add(new JLabel("Payment Email (e-transfer):"));
-        dialog.add(paymentField);
+        dialog.add(emailField);
 
         JButton confirmButton = new JButton("Confirm Booking");
         confirmButton.addActionListener(e -> {
             String carInfo = carInfoField.getText();
-            String paymentInfo = paymentField.getText();
+            String email = emailField.getText();
             String durationText = durationField.getText();
 
-            if (carInfo.isEmpty() || paymentInfo.isEmpty() || durationText.isEmpty()) {
+            if (carInfo.isEmpty() || email.isEmpty() || durationText.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -288,7 +295,7 @@ public class UserBookLot extends JPanel {
                     return;
                 }
 
-                if (!paymentInfo.contains("@")) {
+                if (!email.contains("@")) {
                     JOptionPane.showMessageDialog(dialog, "Please enter a valid email.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -296,8 +303,31 @@ public class UserBookLot extends JPanel {
                 double totalCost = currentUser.getRate() * duration;
                 double deposit = currentUser.getRate() * 1;
 
+                // Get the selected payment method
+                String paymentMethod = (String) paymentMethodComboBox.getSelectedItem();
+
+                // Create a payment strategy based on the selected payment method
+                PaymentStrategy paymentStrategy;
+                switch (paymentMethod) {
+                    case "Credit Card":
+                        paymentStrategy = new CreditCardPayment();
+                        break;
+                    case "Debit Card":
+                        paymentStrategy = new DebitCardPayment();
+                        break;
+                    case "Mobile Payment":
+                        paymentStrategy = new MobilePayment();
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unsupported payment method");
+                }
+
+                // Process the payment
+                PaymentProcessor paymentProcessor = new PaymentProcessor(paymentStrategy);
+                paymentProcessor.processPayment(totalCost);
+
                 // Store the booking details, including the deposit amount
-                Booking booking = new Booking(spaceIndex, carInfo, paymentInfo, duration, totalCost, deposit);
+                Booking booking = new Booking(spaceIndex, carInfo, paymentMethod, duration, totalCost, deposit, email);
                 parkingLots.get(lot).addBooking(booking);
 
                 String confirmationMessage = String.format(
@@ -307,8 +337,9 @@ public class UserBookLot extends JPanel {
                                 "Duration: %d hours\n" +
                                 "Total Cost: $%.2f\n" +
                                 "Deposit: $%.2f\n" +
+                                "Payment Method: %s\n" +
                                 "Payment Email: %s",
-                        spaceIndex, carInfo, duration, totalCost, deposit, paymentInfo
+                        spaceIndex, carInfo, duration, totalCost, deposit, paymentMethod, email
                 );
 
                 JOptionPane.showMessageDialog(dialog, confirmationMessage, "Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
@@ -329,7 +360,6 @@ public class UserBookLot extends JPanel {
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
     }
-
     // Method to check in
     public void checkIn(int lot, int spaceIndex) {
         Booking booking = parkingLots.get(lot).getBooking(spaceIndex);

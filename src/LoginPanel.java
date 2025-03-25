@@ -115,7 +115,8 @@ public class LoginPanel extends JPanel {
                 // switch to register mode
                 modeLabel.setText("Register");
                 dropdownLabel.setText("Select User Type:");
-                userTypeDropdown.setModel(new DefaultComboBoxModel<>(new String[]{"Student", "Faculty Member", "Non-Faculty Staff", "Visitor"}));
+                //userTypeDropdown.setModel(new DefaultComboBoxModel<>(new String[]{"Student", "Faculty Member", "Non-Faculty Staff", "Visitor"}));
+                userTypeDropdown.setModel(new DefaultComboBoxModel<>(new String[]{"Student", "Facultymember", "NonFacultystaff", "Visitor"}));
                 switchModeButton.setText("Switch to Login");
             } else {
                 // switch to login mode
