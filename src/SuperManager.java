@@ -5,11 +5,12 @@ interface ManagerRole {
 	String getUsername();
 	String getPassword();
 	
-	void enableParkingLot();
-	void disableParkingLot();
 }
 
-public class SuperManager {
+public class SuperManager implements ManagerRole {
+	
+	protected String username; //If needed we can hardcode a set superManager name (as there will only ever be one)
+	protected String password; //Same for password
 	
 	private static volatile SuperManager instance;
 	private static final Object lock = new Object(); //Lock object used for synchronization such that we can implement double-checked locking
@@ -69,6 +70,16 @@ public class SuperManager {
 		return password.toString();
 		
 	}
+
+	@Override
+	public String getUsername() {
+		return username;
+	}
+
+	@Override
+	public String getPassword() {
+		return password;
+	}
 }
 
 class ManagerProxy implements ManagerRole {
@@ -96,18 +107,6 @@ class ManagerProxy implements ManagerRole {
     public String getPassword() {
         return managerRole.getPassword();
     }
-
-	@Override
-	public void enableParkingLot() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void disableParkingLot() {
-		// TODO Auto-generated method stub
-		
-	}
 }
 
 class Manager implements ManagerRole {
@@ -127,18 +126,6 @@ class Manager implements ManagerRole {
 	@Override
 	public String getPassword() {
 		return password;
-	}
-
-	@Override
-	public void enableParkingLot() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void disableParkingLot() {
-		// TODO Auto-generated method stub
-		
 	}
 	
 }
