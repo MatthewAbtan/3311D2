@@ -274,7 +274,7 @@ public class UserBookLot extends JPanel {
         dialog.add(new JLabel("Payment Method:"));
         dialog.add(paymentMethodComboBox);
 
-        dialog.add(new JLabel("Payment Email (e-transfer):"));
+        dialog.add(new JLabel(" Email:"));
         dialog.add(emailField);
 
         JButton confirmButton = new JButton("Confirm Booking");
