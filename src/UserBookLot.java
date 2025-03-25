@@ -200,6 +200,32 @@ public class UserBookLot extends JPanel {
         JTextField carInfoField = new JTextField();
         JTextField paymentField = new JTextField();
 
+        JTextField durationField = new JTextField(5);
+        JLabel totalCostLabel = new JLabel("Total Cost: $0");
+
+        durationField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                try {
+                    int duration = Integer.parseInt(durationField.getText().trim());
+                    if (duration > 0) {
+                        double totalCost = currentUser.getRate() * duration;
+                        totalCostLabel.setText("Total Cost: $" + String.format("%.2f", totalCost));
+                    } else {
+                        totalCostLabel.setText("Total Cost: $0");
+                    }
+                } catch (NumberFormatException ex) {
+                    totalCostLabel.setText("Total Cost: $0");
+                }
+            }
+        });
+
+        dialog.add(new JLabel("Duration (hours):"));
+        dialog.add(durationField);
+        dialog.add(totalCostLabel);
+        dialog.add(new JLabel());
+
+
         dialog.add(new JLabel("Car Info (license plate):"));
         dialog.add(carInfoField);
         dialog.add(new JLabel("Payment Email (e-transfer):"));
@@ -210,8 +236,9 @@ public class UserBookLot extends JPanel {
             String carInfo = carInfoField.getText();
             //currently i dont store this anywhere, i dont think we have to
             String paymentInfo = paymentField.getText();
+            String durationText = durationField.getText();
 
-            if (carInfo.isEmpty() || paymentInfo.isEmpty() || !paymentInfo.contains("@")) {
+            /*if (carInfo.isEmpty() || paymentInfo.isEmpty() || !paymentInfo.contains("@") || durationText.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(dialog, "Space booked!\nCar Info: " + carInfo + "\nEmail: " + paymentInfo,"Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
@@ -221,7 +248,54 @@ public class UserBookLot extends JPanel {
                 //reload the lot
                 loadSpacesForLot(lot);
             }
+        });*/
+
+            if (carInfo.isEmpty() || paymentInfo.isEmpty() || durationText.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                int duration = Integer.parseInt(durationText);
+                if (duration <= 0) {
+                    JOptionPane.showMessageDialog(dialog, "Duration must be a positive number.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!paymentInfo.contains("@")) {
+                    JOptionPane.showMessageDialog(dialog, "Please enter a valid email.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Calculate total cost
+                double totalCost = currentUser.getRate() * duration;
+
+                // Confirmation message with details
+                String confirmationMessage = String.format(
+                        "Booking Confirmed!\n\n" +
+                                "Space: #%d\n" +
+                                "Car: %s\n" +
+                                "Duration: %d hours\n" +
+                                "Total Cost: $%.2f\n" +
+                                "Payment Email: %s",
+                        spaceIndex, carInfo, duration, totalCost, paymentInfo
+                );
+
+                JOptionPane.showMessageDialog(dialog, confirmationMessage, "Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
+
+                // Book the space
+                parkingLots.get(lot).setSpace(spaceIndex, "OccupiedState", MainSystem.currentUser.getUsername(), carInfo);
+                dialog.dispose(); // close the dialog
+                mainSystem.updateFile("data/parkingSpaceData.csv"); // update file
+
+                // Reload the lot to reflect the changes
+                loadSpacesForLot(lot);
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a valid duration.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
+
 
         dialog.add(new JLabel());
         dialog.add(confirmButton);
