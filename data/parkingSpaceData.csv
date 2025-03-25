@@ -1,6 +1,6 @@
 lot,index,state,user,car
 Lot 1,0,EmptyState,Empty,Empty
-Lot 1,1,EmptyState,Empty,Empty
+Lot 1,1,OccupiedState,Josh,233
 Lot 1,2,EmptyState,Empty,Empty
 Lot 1,3,EmptyState,Empty,Empty
 Lot 1,4,EmptyState,Empty,Empty

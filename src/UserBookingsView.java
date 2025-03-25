@@ -86,6 +86,7 @@ public class UserBookingsView extends JPanel {
             String lot = bookingList.getSelectedValue().split(": ")[0];
             String index = bookingList.getSelectedValue().split(": ")[1].split(" ")[1];
             CsvReader reader = new CsvReader("data/parkingSpaceData.csv");
+            reader.readHeaders();
             while(reader.readRecord()){
                 if(reader.get("lot").equals(lot) && reader.get("index").equals(index)){
                     //update the space to be empty
@@ -116,6 +117,7 @@ public class UserBookingsView extends JPanel {
     //temp method for filling the view without actual data
     public static void populateUserBookings() throws Exception{
         CsvReader reader = new CsvReader("data/parkingSpaceData.csv");
+        reader.readHeaders();
         while(reader.readRecord()){
             String user = reader.get("user");
             if(user.equals(MainSystem.currentUser.getUsername())){

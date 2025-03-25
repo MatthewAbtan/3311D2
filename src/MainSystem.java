@@ -9,47 +9,38 @@ public class MainSystem {
     //need to track who is logged in
     public static User currentUser;
     //file for storing user info
-    public String userFilePath;
+    public static final String userFilePath = "data/userData.csv";
     //file for storing maanger accounts
-    public String managerFilePath;
+    public static final String managerFilePath = "data/managerData.csv";
     //file for sotring lot info
-    public String lotFilePath;
-    public String parkingSpaceFilePath;
+    public static final String lotFilePath = "data/lotData.csv";
+    public static final String parkingSpaceFilePath = "data/parkingSpaceData.csv";
+
     private ArrayList<ParkingLot> lots = new ArrayList<>();
     private ArrayList<Manager> managers = new ArrayList<>();
     private ArrayList<User> approvedUsers = new ArrayList<>();
     private ArrayList<User> pendingUsers = new ArrayList<>();
     private UserFactory userFactory = new UserFactory();
     private MainSystem(){
-        userFilePath = "data/userData.csv";
-        managerFilePath = "data/managerData.csv";
-        lotFilePath = "data/lotData.csv";
-        parkingSpaceFilePath = "data/parkingSpaceData.csv";
-
-
-        this.registerAccount("Visitor", "Josh", "j123");
-        this.registerAccount("Student", "Ben", "b123");
-
-        SuperManager sp = SuperManager.getInstance();
-        this.managers.add(sp.createManagerAccount());
-        this.managers.add(sp.createManagerAccount());
-        this.managers.add(sp.createManagerAccount());
-
-        this.lots.add(new ParkingLot("Lot 1"));
-        this.lots.add(new ParkingLot("Lot 2"));
-        this.lots.add(new ParkingLot("Lot 3"));
-
-        updateFile( userFilePath );
-        updateFile( managerFilePath );
-        updateFile( lotFilePath );
-        updateFile( parkingSpaceFilePath );
-
-        try {
-            loadFiles();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        loadData();
+        //below code is commented out but can be edited and uncommented to add users to files manually
+//
+//        this.registerAccount("Visitor", "Josh", "j123");
+//        this.registerAccount("Student", "Ben", "b123");
+//
+//        SuperManager sp = SuperManager.getInstance();
+//        this.managers.add(sp.createManagerAccount());
+//        this.managers.add(sp.createManagerAccount());
+//        this.managers.add(sp.createManagerAccount());
+//
+//        this.lots.add(new ParkingLot("Lot 1"));
+//        this.lots.add(new ParkingLot("Lot 2"));
+//        this.lots.add(new ParkingLot("Lot 3"));
+//
+//        updateFile( userFilePath );
+//        updateFile( managerFilePath );
+//        updateFile( lotFilePath );
+//        updateFile( parkingSpaceFilePath );
 
     }
 
@@ -94,6 +85,28 @@ public class MainSystem {
     	}
     	return false;
     }
+    public void approveAccount(String username, boolean approved){
+        for (User user : pendingUsers) {
+            if (user.getUsername().equals(username)) {
+                if (approved) {
+                    user.setApproved(true);
+                    approvedUsers.add(user);
+                    pendingUsers.remove(user);
+                    break;
+                }else{
+                    user.setApproved(false);
+                    pendingUsers.remove(user);
+                }
+            }
+        }
+    }
+    public void loadData(){
+        try{
+            loadFiles();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
     //below are methods for files
     //this loads data form the file into this classes lists
@@ -105,7 +118,7 @@ public class MainSystem {
         //users update
         while(reader.readRecord()){
             String type = reader.get("type");
-            String username = reader.get("username");
+            String username = reader.get("email");
             String approvalStatus = reader.get("approved");
             String password = reader.get("password");
             if(type.equals("Visitor")){//if visitor its auto approved
@@ -120,15 +133,16 @@ public class MainSystem {
         }
         //managers update
         reader = new CsvReader(managerFilePath);
+        reader.readHeaders();
         while(reader.readRecord()){
-            String username = reader.get("username");
+            String username = reader.get("email");
             String password = reader.get("password");
             managers.add(new Manager(username, password));
         }
         //update lots
         reader = new CsvReader(lotFilePath);
+        reader.readHeaders();
         while(reader.readRecord()){
-            System.out.println(reader.get("name"));
             String name = reader.get("name");
             ParkingLot lot = new ParkingLot(name);
             lot.setEnabled(reader.get("enabled").equals("true")); //make the lot enabled if it was enabled in the data sheet
@@ -137,11 +151,9 @@ public class MainSystem {
         }
         //update spaces, will prolly edit later to also update user pesonal booking list
         reader = new CsvReader(parkingSpaceFilePath);
-        System.out.println("Updating spaces...");
+        reader.readHeaders();
         while(reader.readRecord()){
-            System.out.println(reader.get("lot") + reader.get("index"));
             String lotName = reader.get("lot");
-            System.out.println(reader.get("lot") + " " + reader.get("index"));
             int index = Integer.parseInt(reader.get("index"));
             String state = reader.get("state");
             String user = reader.get("user");

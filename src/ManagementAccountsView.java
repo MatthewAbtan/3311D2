@@ -1,11 +1,14 @@
+import com.csvreader.CsvReader;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class ManagementAccountsView extends JPanel {
 
-    private DefaultListModel<String> accountListModel;
+    private static DefaultListModel<String> accountListModel;
     private JList<String> accountList;
 
     public ManagementAccountsView(Consumer<String> switchTo) {
@@ -27,7 +30,7 @@ public class ManagementAccountsView extends JPanel {
         scrollPane.setPreferredSize(new Dimension(300, 200));
         add(scrollPane, BorderLayout.CENTER);
 
-        populatePendingAccounts(); //temp method to test out code
+        //populatePendingAccounts(); //temp method to test out code
 
         // bottom panel with action buttons
         JPanel buttonPanel = new JPanel();
@@ -75,17 +78,25 @@ public class ManagementAccountsView extends JPanel {
     }
 
     //temp method for filling the view without actual data
-    private void populatePendingAccounts() {
-        accountListModel.addElement("User12345 - john.doe@example.com");
-        accountListModel.addElement("User67890 - jane.smith@example.com");
-        accountListModel.addElement("User11122 - alice.wang@example.com");
-        accountListModel.addElement("User33445 - max.jones@example.com");
+    public static void populatePendingAccounts() throws Exception {
+        ArrayList<User> pendingUsers = new ArrayList<>();
+        CsvReader reader = new CsvReader(MainSystem.userFilePath);
+        reader.readHeaders();
+        while(reader.readRecord()){
+            if(reader.get("approved").equals("false")){
+                String user = reader.get("email");
+                String type = reader.get("type");
+                accountListModel.addElement(type + " Account - " + user);
+
+            }
+        }
     }
 
     //this method will work based on account data, for now I just wrote some example code
     private void onApproveAccount() {
         if (accountList.getSelectedValue() != null) {
             String selectedAccount = accountList.getSelectedValue();
+            updateAccount(true);
             accountListModel.removeElement(selectedAccount);
             JOptionPane.showMessageDialog(this, "Account Approved: " + selectedAccount);
         } else {
@@ -97,10 +108,27 @@ public class ManagementAccountsView extends JPanel {
     private void onDenyAccount() {
         if (accountList.getSelectedValue() != null) {
             String selectedAccount = accountList.getSelectedValue();
+            updateAccount(false);
             accountListModel.removeElement(selectedAccount);
             JOptionPane.showMessageDialog(this, "Account Denied: " + selectedAccount);
         } else {
             JOptionPane.showMessageDialog(this, "Please select an account to deny.");
+        }
+    }
+
+    private void updateAccount(boolean approved){
+        String user = accountList.getSelectedValue().split(" - ")[1];
+        try {
+            CsvReader reader = new CsvReader(MainSystem.userFilePath);
+            reader.readHeaders();
+            if(reader.get("email").equals(user)){
+                MainSystem.getInstance().approveAccount(user, approved);
+                MainSystem.getInstance().updateFile(MainSystem.userFilePath);//update file
+                populatePendingAccounts();//reload the view
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

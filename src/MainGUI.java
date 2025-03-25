@@ -58,6 +58,13 @@ public void switchTo(String panel){
         // Add a new UserBookLot panel with the current user
         mainPanel.add(new UserBookLot(this::switchTo), "UserBookLot");
     }
+    if(Objects.equals(panel, "AccountsView")){
+        try {
+            ManagementAccountsView.populatePendingAccounts();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     cardLayout.show(mainPanel,panel);
 }

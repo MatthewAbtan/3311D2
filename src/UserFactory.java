@@ -55,9 +55,9 @@ public class UserFactory {
         switch (userType.toLowerCase()) {
             case "student":
                 return new Student(username, password);
-            case "faculty":
+            case "facultymember":
                 return new FacultyMember(username, password);
-            case "non-faculty":
+            case "nonfacultystaff":
                 return new NonFacultyStaff(username, password);
             case "visitor":
                 return new Visitor(username, password);

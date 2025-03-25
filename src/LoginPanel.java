@@ -163,7 +163,6 @@ public class LoginPanel extends JPanel {
                     ArrayList<User> users = mainSystem.getApprovedUsers();
                     ArrayList<User> pendingUsers = mainSystem.getPendingUsers();
                     for(User u : users){
-                        System.out.println("Checking user: " + u.getUsername());
                         if(u.getUsername().equals(usernameField.getText()) && u.getPassword().equals(passwordField.getText())){
                             actionMessage.setText("Login successful.");
                             actionMessage.setForeground(new Color(0, 128, 0));
@@ -191,9 +190,26 @@ public class LoginPanel extends JPanel {
                     actionMessage.setForeground(new Color(128, 0, 0));
                     displayMessage();
                 }
-                //switchTo.accept("UserDashboard");
                 if (userTypeDropdown.getSelectedItem().equals("Manager")) {//logging in as manager
-                    switchTo.accept("ManagementDashboard");
+                    ArrayList<Manager> maangers = mainSystem.getManagers();
+                    for(Manager m : maangers){
+                        if(m.getUsername().equals(usernameField.getText()) && m.getPassword().equals(passwordField.getText())){
+                            actionMessage.setText("Login successful.");
+                            actionMessage.setForeground(new Color(0, 128, 0));
+                            actionMessage.setVisible(true);
+                            //added a timer to login after 1.5 swcond delay
+                            Timer timer = new Timer(1000, event -> {
+                                actionMessage.setVisible(false);
+                                switchTo.accept("ManagementDashboard");
+                            });
+                            timer.setRepeats(false);
+                            timer.start();
+                            return;
+                        }
+                    }
+                    actionMessage.setText("Username/Password combination invalid, please try again.");
+                    actionMessage.setForeground(new Color(128, 0, 0));
+                    displayMessage();
                 }
             }
         }

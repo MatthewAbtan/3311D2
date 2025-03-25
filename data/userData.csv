@@ -1,3 +1,7 @@
 email,password,approved,type
 Josh,j123,true,Visitor
-Ben,b123,false,Student
+Ben,b123,true,Student
+Gary,g123,true,FacultyMember
+Alan,a123,false,NonFacultyStaff
+Dan,d123,false,FacultyMember
+Hank,h123,false,Student
