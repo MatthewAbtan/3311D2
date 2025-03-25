@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import javax.swing.event.ListSelectionEvent;
@@ -18,7 +20,16 @@ public class UserBookLot extends JPanel {
     private final Color GREEN = new Color(127, 255, 212);
     private final Color RED = new Color(255, 127, 127);
 
+    private JTextField durationField;
+    private JLabel totalCostLabel;
+    private User currentUser;
+
+
+
     public UserBookLot(Consumer<String> switchTo) {
+        this.currentUser = MainSystem.currentUser;
+
+
         this.parkingLots = mainSystem.getLots();
         this.switchTo = switchTo;
         // panel layout
@@ -73,6 +84,42 @@ public class UserBookLot extends JPanel {
         // this panel will display the parking spaces
         spacePanel = new JPanel();
         spacePanel.setLayout(new GridLayout(10, 10, 5, 5)); // 5 rows x 10 spaces (example)
+
+        // Panel for booking controls
+        JPanel bookingPanel = new JPanel();
+        bookingPanel.setLayout(new GridLayout(3, 2, 5, 5));
+
+        // Label and input field for duration
+        JLabel durationLabel = new JLabel("Enter Duration (hours):");
+        durationField = new JTextField(5);
+        totalCostLabel = new JLabel("Total Cost: $0");
+
+        // Update total cost dynamically when duration is entered
+        durationField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                try {
+                    int duration = Integer.parseInt(durationField.getText().trim());
+                    if (duration > 0) {
+                        double totalCost = currentUser.getRate() * duration;
+                        totalCostLabel.setText("Total Cost: $" + totalCost);
+                    } else {
+                        totalCostLabel.setText("Total Cost: $0");
+                    }
+                } catch (NumberFormatException ex) {
+                    totalCostLabel.setText("Total Cost: $");
+                }
+            }
+        });
+        // Add components to booking panel
+        bookingPanel.add(durationLabel);
+        bookingPanel.add(durationField);
+        bookingPanel.add(new JLabel("Hourly Rate: $" + currentUser.getRate()));
+        bookingPanel.add(totalCostLabel);
+
+// Add booking panel to the bottom of the main panel
+        add(bookingPanel, BorderLayout.SOUTH);
+
 
         // placeholder initial spaces
         loadSpacesForLot(-1);

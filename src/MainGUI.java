@@ -23,7 +23,7 @@ public class MainGUI extends JFrame{
         //adding all the panels for different parts of the GUI
         mainPanel.add(new LoginPanel(this::switchTo),"Login");
         mainPanel.add(new UserDashboard(this::switchTo),"UserDashboard");
-        mainPanel.add(new UserBookLot(this::switchTo),"UserBookLot");
+        //mainPanel.add(new UserBookLot(this::switchTo, MainSystem.currentUser),"UserBookLot");
         mainPanel.add(new UserBookingsView(this::switchTo),"UserBookings");
         mainPanel.add(new ManagementDashboard(this::switchTo),"ManagementDashboard");
         mainPanel.add(new ManagementAccountsView(this::switchTo), "AccountsView");
@@ -44,7 +44,22 @@ public void switchTo(String panel){
                 e.printStackTrace();
             }
         }
-        cardLayout.show(mainPanel,panel);
+    // Check if we're switching to UserBookLot
+    if(Objects.equals(panel, "UserBookLot")){
+        // Remove the existing UserBookLot panel if it exists
+        Component[] components = mainPanel.getComponents();
+        for (Component comp : components) {
+            if (comp instanceof UserBookLot) {
+                mainPanel.remove(comp);
+                break;
+            }
+        }
+
+        // Add a new UserBookLot panel with the current user
+        mainPanel.add(new UserBookLot(this::switchTo), "UserBookLot");
+    }
+
+    cardLayout.show(mainPanel,panel);
 }
 
 public static void main(String[] args) {
