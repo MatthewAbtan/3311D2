@@ -190,11 +190,11 @@ public class UserBookLot extends JPanel {
         spacePanel.revalidate();
         spacePanel.repaint();
     }
-//method for showing payment box
+    // method for showing payment box
     public void displayBookingForm(int lot, int spaceIndex) {
         JDialog dialog = new JDialog((Frame) null, "Enter Booking Details", true);
-        dialog.setSize(400, 200);
-        dialog.setLayout(new GridLayout(3, 2, 10, 10));
+        dialog.setSize(400, 250);
+        dialog.setLayout(new GridLayout(5, 2, 10, 10));
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         JTextField carInfoField = new JTextField();
@@ -202,6 +202,7 @@ public class UserBookLot extends JPanel {
 
         JTextField durationField = new JTextField(5);
         JLabel totalCostLabel = new JLabel("Total Cost: $0");
+        JLabel depositLabel = new JLabel("Deposit: $0");
 
         durationField.addKeyListener(new KeyAdapter() {
             @Override
@@ -210,12 +211,16 @@ public class UserBookLot extends JPanel {
                     int duration = Integer.parseInt(durationField.getText().trim());
                     if (duration > 0) {
                         double totalCost = currentUser.getRate() * duration;
+                        double deposit = currentUser.getRate() * 1; // deposit is user rate * 1
                         totalCostLabel.setText("Total Cost: $" + String.format("%.2f", totalCost));
+                        depositLabel.setText("Deposit: $" + String.format("%.2f", deposit));
                     } else {
                         totalCostLabel.setText("Total Cost: $0");
+                        depositLabel.setText("Deposit: $0");
                     }
                 } catch (NumberFormatException ex) {
                     totalCostLabel.setText("Total Cost: $0");
+                    depositLabel.setText("Deposit: $0");
                 }
             }
         });
@@ -223,8 +228,7 @@ public class UserBookLot extends JPanel {
         dialog.add(new JLabel("Duration (hours):"));
         dialog.add(durationField);
         dialog.add(totalCostLabel);
-        dialog.add(new JLabel());
-
+        dialog.add(depositLabel);
 
         dialog.add(new JLabel("Car Info (license plate):"));
         dialog.add(carInfoField);
@@ -234,21 +238,8 @@ public class UserBookLot extends JPanel {
         JButton confirmButton = new JButton("Confirm Booking");
         confirmButton.addActionListener(e -> {
             String carInfo = carInfoField.getText();
-            //currently i dont store this anywhere, i dont think we have to
             String paymentInfo = paymentField.getText();
             String durationText = durationField.getText();
-
-            /*if (carInfo.isEmpty() || paymentInfo.isEmpty() || !paymentInfo.contains("@") || durationText.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(dialog, "Space booked!\nCar Info: " + carInfo + "\nEmail: " + paymentInfo,"Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
-                parkingLots.get(lot).setSpace(spaceIndex, "OccupiedState", MainSystem.currentUser.getUsername(), carInfo);
-                dialog.dispose(); // close the dialog
-                mainSystem.updateFile("data/parkingSpaceData.csv");//update file
-                //reload the lot
-                loadSpacesForLot(lot);
-            }
-        });*/
 
             if (carInfo.isEmpty() || paymentInfo.isEmpty() || durationText.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -267,28 +258,25 @@ public class UserBookLot extends JPanel {
                     return;
                 }
 
-                // Calculate total cost
                 double totalCost = currentUser.getRate() * duration;
+                double deposit = currentUser.getRate() * 1;
 
-                // Confirmation message with details
                 String confirmationMessage = String.format(
                         "Booking Confirmed!\n\n" +
                                 "Space: #%d\n" +
                                 "Car: %s\n" +
                                 "Duration: %d hours\n" +
                                 "Total Cost: $%.2f\n" +
+                                "Deposit: $%.2f\n" +
                                 "Payment Email: %s",
-                        spaceIndex, carInfo, duration, totalCost, paymentInfo
+                        spaceIndex, carInfo, duration, totalCost, deposit, paymentInfo
                 );
 
                 JOptionPane.showMessageDialog(dialog, confirmationMessage, "Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
 
-                // Book the space
                 parkingLots.get(lot).setSpace(spaceIndex, "OccupiedState", MainSystem.currentUser.getUsername(), carInfo);
-                dialog.dispose(); // close the dialog
-                mainSystem.updateFile("data/parkingSpaceData.csv"); // update file
-
-                // Reload the lot to reflect the changes
+                dialog.dispose();
+                mainSystem.updateFile("data/parkingSpaceData.csv");
                 loadSpacesForLot(lot);
 
             } catch (NumberFormatException ex) {
@@ -296,11 +284,11 @@ public class UserBookLot extends JPanel {
             }
         });
 
-
         dialog.add(new JLabel());
         dialog.add(confirmButton);
 
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
     }
+
 }
