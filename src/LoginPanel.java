@@ -1,14 +1,12 @@
-package GUI;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.function.Consumer;
-import System.MainSystem;
 
 public class LoginPanel extends JPanel {
-    private final MainSystem mainSystem;
+    private final MainSystem mainSystem = MainSystem.getInstance();
     private JComboBox<String> userTypeDropdown;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -20,8 +18,7 @@ public class LoginPanel extends JPanel {
     private boolean isRegisterMode = false;
     private Consumer<String> switchTo;
 
-    public LoginPanel(Consumer<String> switchTo, MainSystem mainSystem) {
-        this.mainSystem = mainSystem;
+    public LoginPanel(Consumer<String> switchTo) {
         //method for switching panels
         this.switchTo = switchTo;
         // main layout, using box to center everything vertically
@@ -133,7 +130,7 @@ public class LoginPanel extends JPanel {
         }
     }
 
-    // action listener for submit button; will add logic later when classes are made
+    // action listener for submit button
     private class SubmitButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -151,8 +148,10 @@ public class LoginPanel extends JPanel {
                     displayMessage();
                 }else{
                     if(userTypeDropdown.getSelectedItem().equals("Visitor")){
+                        mainSystem.registerAccount("Visitor", usernameField.getText(), passwordField.getText()); //register in main system
                         actionMessage.setText("Visitor account created, please login to continue.");
                     }else{
+                        mainSystem.registerAccount(userTypeDropdown.getSelectedItem().toString(), usernameField.getText(), passwordField.getText()); //register in main system
                         actionMessage.setText(userTypeDropdown.getSelectedItem() + " account created, requires approval from administrator.");
                     }
                     actionMessage.setForeground(new Color(0, 128, 0));
@@ -160,9 +159,41 @@ public class LoginPanel extends JPanel {
                 }
             } else { //they are logging in
                 // simulate login success
-                switchTo.accept("GUI.UserDashboard");
-                if (userTypeDropdown.getSelectedItem().equals("Manager")) {//logging in as maanger
-                    switchTo.accept("GUI.ManagementDashboard");
+                if(userTypeDropdown.getSelectedItem().equals("User")){ //login in as user
+                    ArrayList<User> users = mainSystem.getApprovedUsers();
+                    ArrayList<User> pendingUsers = mainSystem.getPendingUsers();
+                    for(User u : users){
+                        System.out.println("Checking user: " + u.getUsername());
+                        if(u.getUsername().equals(usernameField.getText()) && u.getPassword().equals(passwordField.getText())){
+                            actionMessage.setText("Login successful.");
+                            actionMessage.setForeground(new Color(0, 128, 0));
+                            actionMessage.setVisible(true);
+                            //added a timer to login after 1.5 swcond delay
+                            Timer timer = new Timer(1000, event -> {
+                                actionMessage.setVisible(false);
+                                MainSystem.currentUser = u;
+                                switchTo.accept("UserDashboard");
+                            });
+                            timer.setRepeats(false);
+                            timer.start();
+                            return;
+                        }
+                    }
+                    for(User u : pendingUsers){
+                        if(u.getUsername().equals(usernameField.getText()) && u.getPassword().equals(passwordField.getText())){
+                            actionMessage.setText("Account pending approval, please contact administrator.");
+                            actionMessage.setForeground(new Color(128, 0, 0));
+                            displayMessage();
+                            return;
+                        }
+                    }
+                    actionMessage.setText("Username/Password combination invalid, please try again.");
+                    actionMessage.setForeground(new Color(128, 0, 0));
+                    displayMessage();
+                }
+                //switchTo.accept("UserDashboard");
+                if (userTypeDropdown.getSelectedItem().equals("Manager")) {//logging in as manager
+                    switchTo.accept("ManagementDashboard");
                 }
             }
         }

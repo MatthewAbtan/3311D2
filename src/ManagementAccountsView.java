@@ -1,5 +1,3 @@
-package GUI;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -57,7 +55,7 @@ public class ManagementAccountsView extends JPanel {
         addButton(buttonPanel, "Back to Dashboard", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchTo.accept("GUI.ManagementDashboard");
+                switchTo.accept("ManagementDashboard");
             }
         });
 

@@ -1,5 +1,3 @@
-package System;
-
 public class ParkingLot{
     private ParkingSpace[] spaces;
     private String lotName;
@@ -11,6 +9,9 @@ public class ParkingLot{
         this.lotName = lotName;
         this.enabled = true;            //enabled by default
         spaces = new ParkingSpace[100]; //lots always have 100 spaces as per the assigment guidelines
+        for (int i = 0; i < spaces.length; i++) {
+            spaces[i] = new ParkingSpace(i, "EmptyState", "Empty", "Empty");
+        }
     }
 
     public ParkingSpace[] getSpaces(){
@@ -23,6 +24,9 @@ public class ParkingLot{
     public String getLotName(){
         return lotName;
     }
+    public ParkingSpace getSpace(int index){
+        return spaces[index];
+    }
     //this needs the observer stuff
     public String getLotAvailability(){
         return lotAvailability;
@@ -30,5 +34,9 @@ public class ParkingLot{
 
     public void setEnabled(boolean enabled){
         this.enabled = enabled;
+    }
+
+    public void setSpace(int index, String state, String user, String car){
+        this.spaces[index] = new ParkingSpace(index, state, user, car);
     }
 }

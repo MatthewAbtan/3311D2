@@ -1,5 +1,3 @@
-package GUI;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
@@ -57,7 +55,7 @@ public class ManagementLotsView extends JPanel {
 
         JButton backButton = new JButton("Back to Dashboard");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        backButton.addActionListener(e -> switchTo.accept("GUI.ManagementDashboard"));
+        backButton.addActionListener(e -> switchTo.accept("ManagementDashboard"));
 
         buttonPanel.add(addLotButton);
         buttonPanel.add(backButton);

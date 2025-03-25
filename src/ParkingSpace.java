@@ -1,5 +1,3 @@
-package System;
-
 //state design pattern
 interface ParkingSpaceState{
     void book(ParkingSpace space);
@@ -53,17 +51,27 @@ class MaintenanceState implements ParkingSpaceState{
 }
 public class ParkingSpace {
     private ParkingSpaceState state;
-    private int num;
-    private boolean occupied;
-    private boolean maintenence;
+    private int index;
+    private String currentUser;
     private String currentCar;
 
-    public ParkingSpace(int num) {
-        this.num = num;
-        this.occupied = false;
-        this.maintenence = false;
-        this.currentCar = "Space is Empty";
-        this.state = new EmptyState(); //
+    public ParkingSpace(int num, String state, String user, String car) {
+        this.index = num;
+        this.state = this.mapStateFromString(state);
+        this.currentUser = user;
+        this.currentCar = car;
+    }
+    public int getIndex(){
+        return index;
+    }
+    public String getCurrentUser(){
+        return currentUser;
+    }
+    public String getCurrentCar(){
+        return currentCar;
+    }
+    public ParkingSpaceState getState(){
+        return state;
     }
     public void setState(ParkingSpaceState state){
         this.state = state;
@@ -77,14 +85,16 @@ public class ParkingSpace {
     public void setMaintenance(){
         state.setMaintenance(this);
     }
-    public String getStatus(){
-        if(occupied){
-            return "Space is occupied";
-        }else{
-            if(maintenence){
-                return "Space is maintenance";
-            }
-            return "Space is not empty";
+    private ParkingSpaceState mapStateFromString(String state) {
+        switch (state) {
+            case "EmptyState":
+                return new EmptyState();
+            case "OccupiedState":
+                return new OccupiedState();
+            case "MaintenanceState":
+                return new MaintenanceState();
         }
+        return null;
     }
+
 }

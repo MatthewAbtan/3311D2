@@ -1,14 +1,11 @@
-package GUI;
-
 import javax.swing.*;
 import java.awt.*;
-import System.MainSystem;
+import java.util.Objects;
 
 public class MainGUI extends JFrame{
     private static MainGUI instance;
     CardLayout cardLayout;
     JPanel mainPanel;
-    MainSystem mainSystem;
 
     //singleton
     public static MainGUI getInstance(){
@@ -22,14 +19,13 @@ public class MainGUI extends JFrame{
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        this.mainSystem = MainSystem.getInstance();
 
         //adding all the panels for different parts of the GUI
-        mainPanel.add(new LoginPanel(this::switchTo, mainSystem),"Login");
-        mainPanel.add(new UserDashboard(this::switchTo),"GUI.UserDashboard");
-        mainPanel.add(new UserBookLot(this::switchTo),"GUI.UserBookLot");
+        mainPanel.add(new LoginPanel(this::switchTo),"Login");
+        mainPanel.add(new UserDashboard(this::switchTo),"UserDashboard");
+        mainPanel.add(new UserBookLot(this::switchTo),"UserBookLot");
         mainPanel.add(new UserBookingsView(this::switchTo),"UserBookings");
-        mainPanel.add(new ManagementDashboard(this::switchTo),"GUI.ManagementDashboard");
+        mainPanel.add(new ManagementDashboard(this::switchTo),"ManagementDashboard");
         mainPanel.add(new ManagementAccountsView(this::switchTo), "AccountsView");
         mainPanel.add(new ManagementLotsView(this::switchTo), "LotsView");
         cardLayout.show(mainPanel,"Login");
@@ -41,13 +37,20 @@ public class MainGUI extends JFrame{
 
 //we pass this method to each panel, allows us to change panels
 public void switchTo(String panel){
+        if(Objects.equals(panel, "UserBookings")){//only trigger this when switching to user bookings in order to dynamically update
+            try {
+                UserBookingsView.populateUserBookings();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         cardLayout.show(mainPanel,panel);
 }
 
 public static void main(String[] args) {
     System.out.println("Hello, World!");
 
-    JFrame frame = MainGUI.getInstance();                   //GUI.MainGUI is implemented as a singleton
+    JFrame frame = MainGUI.getInstance();                   //MainGUI is implemented as a singleton
     frame.setSize(1280,720);
     frame.setResizable(false);                              //makes it so that the window can not be resized, I did this to make it have a consistent look
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -1,5 +1,3 @@
-package System;
-
 abstract class User {
     protected String username;
     protected String password;

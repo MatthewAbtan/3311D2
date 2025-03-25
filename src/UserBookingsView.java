@@ -1,4 +1,4 @@
-package GUI;
+import com.csvreader.CsvReader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 public class UserBookingsView extends JPanel {
 
-    private DefaultListModel<String> bookingListModel;
+    private static DefaultListModel<String> bookingListModel;
     private JList<String> bookingList;
 
     public UserBookingsView(Consumer<String> switchTo) {
@@ -29,8 +29,6 @@ public class UserBookingsView extends JPanel {
         scrollPane.setPreferredSize(new Dimension(300, 200));
         add(scrollPane, BorderLayout.CENTER);
 
-        populateUserBookings(); //temp method to test out code
-
         // bottom panel with action buttons
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
@@ -39,7 +37,11 @@ public class UserBookingsView extends JPanel {
         addButton(buttonPanel, "Cancel Booking", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                onCancelBooking();
+                try{
+                    onCancelBooking();
+                }catch(Exception exception){
+                    exception.printStackTrace();
+                }
             }
         });
 
@@ -59,7 +61,7 @@ public class UserBookingsView extends JPanel {
         addButton(buttonPanel, "Back to Dashboard", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchTo.accept("GUI.UserDashboard");
+                switchTo.accept("UserDashboard");
             }
         });
 
@@ -79,9 +81,23 @@ public class UserBookingsView extends JPanel {
     }
 
     //this method will work based on parking space data, for now I just wrote some example code
-    private void onCancelBooking() {
+    private void onCancelBooking() throws Exception{
         if (bookingList.getSelectedValue() != null) {
+            String lot = bookingList.getSelectedValue().split(": ")[0];
+            String index = bookingList.getSelectedValue().split(": ")[1].split(" ")[1];
+            CsvReader reader = new CsvReader("data/parkingSpaceData.csv");
+            while(reader.readRecord()){
+                if(reader.get("lot").equals(lot) && reader.get("index").equals(index)){
+                    //update the space to be empty
+                    MainSystem.getInstance().getLots().get(Integer.parseInt(lot))
+                            .setSpace(Integer.parseInt(index), "EmptyState", "Empty", "Empty");
+                    //update file
+                    MainSystem.getInstance().updateFile("data/parkingSpaceData.csv");
+                    break;
+                }
+            }
             bookingListModel.removeElement(bookingList.getSelectedValue());
+
             JOptionPane.showMessageDialog(this, "Booking canceled successfully.");
         } else {
             JOptionPane.showMessageDialog(this, "Please select a booking to cancel.");
@@ -98,10 +114,15 @@ public class UserBookingsView extends JPanel {
     }
 
     //temp method for filling the view without actual data
-    private void populateUserBookings() {
-        bookingListModel.addElement("Booking 1 - Lot A, Space 42, Time: 10:00 AM - 12:00 PM");
-        bookingListModel.addElement("Booking 2 - Lot B, Space 15, Time: 2:00 PM - 4:00 PM");
-        bookingListModel.addElement("Booking 3 - Lot A, Space 88, Time: 6:00 PM - 8:00 PM");
-        bookingListModel.addElement("Booking 4 - Lot C, Space 7, Time: 9:00 AM - 11:00 AM");
+    public static void populateUserBookings() throws Exception{
+        CsvReader reader = new CsvReader("data/parkingSpaceData.csv");
+        while(reader.readRecord()){
+            String user = reader.get("user");
+            if(user.equals(MainSystem.currentUser.getUsername())){
+                bookingListModel.addElement(reader.get("lot") +
+                        ": Parking Space " + reader.get("index") +
+                        ": "+ reader.get("car"));
+            }
+        }
     }
 }
