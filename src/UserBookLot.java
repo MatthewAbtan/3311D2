@@ -179,6 +179,19 @@ public class UserBookLot extends JPanel {
                         if (currentTime - bookingTime > oneMinute) {
                             bt.setEnabled(false);
                             bt.setText("No-show");
+                            // Schedule a task to remove the booking and change the space color to green after the deposit message
+                            final int spaceIndex = space.getIndex(); // Define spaceIndex here
+                            Timer timer = new Timer(1000, new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    parkingLots.get(lot).removeBooking(spaceIndex);
+                                    parkingLots.get(lot).setSpace(spaceIndex, "EmptyState", "", "");
+                                    mainSystem.updateFile("data/parkingSpaceData.csv");
+                                    loadSpacesForLot(lot);
+                                }
+                            });
+                            timer.setRepeats(false);
+                            timer.start();
                         } else {
                             bt.addActionListener(new ActionListener() {
                                 @Override
@@ -365,11 +378,23 @@ public class UserBookLot extends JPanel {
             );
             JOptionPane.showMessageDialog(null, confirmationMessage, "Checkout Confirmation", JOptionPane.INFORMATION_MESSAGE);
 
-            // Update the booking status and remove the booking
-            parkingLots.get(lot).removeBooking(spaceIndex);
-            parkingLots.get(lot).setSpace(spaceIndex, "EmptyState", "", "");
+            // Update the booking status but do not remove the booking yet
+            parkingLots.get(lot).setSpace(spaceIndex, "OccupiedState", MainSystem.currentUser.getUsername(), booking.getCarInfo());
             mainSystem.updateFile("data/parkingSpaceData.csv");
             loadSpacesForLot(lot);
+
+            // Schedule a task to remove the booking and change the space color to green after the duration
+            Timer timer = new Timer((int) (booking.getDuration() * 60 * 60 * 1000), new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    parkingLots.get(lot).removeBooking(spaceIndex);
+                    parkingLots.get(lot).setSpace(spaceIndex, "EmptyState", "", "");
+                    mainSystem.updateFile("data/parkingSpaceData.csv");
+                    loadSpacesForLot(lot);
+                }
+            });
+            timer.setRepeats(false);
+            timer.start();
         } else {
             JOptionPane.showMessageDialog(null, "No booking found for this space.");
         }
