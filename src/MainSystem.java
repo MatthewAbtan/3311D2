@@ -1,7 +1,8 @@
-import java.util.ArrayList;
+import java.util.*;
 import java.io.FileWriter;
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
+import java.util.regex.*;
 
 //maybe treat this as a facade design pattern
 public class MainSystem {
@@ -100,6 +101,47 @@ public class MainSystem {
             }
         }
     }
+    
+    //Function to validate usernames (emails) and passwords based on our criteria
+    public boolean validateFields(String username, String password) {
+    	try {
+    		validateUsername(username);
+    		validatePassword(password);
+    		return true;
+    	}
+    	catch (IllegalArgumentException e){
+    		System.out.println("Validation failed: " + e.getMessage());
+    		return false;
+    	}
+    }
+    
+    
+    private Boolean validateUsername(String username) {
+    	//This is actually validation for our email
+    	if (username == null || username.isEmpty()) {
+    		throw new IllegalArgumentException("Email can not be empty");
+    	}
+    	if (isRegistered(username)) {
+    		throw new IllegalArgumentException("Email is already taken");
+    	}
+    	
+    	String usernameConditions = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    	
+    	if (!Pattern.matches(usernameConditions, username)) {
+    		throw new IllegalArgumentException("Invalid Email Format");
+    	}
+    	
+    	return true;
+    }
+    
+    private Boolean validatePassword(String password) {
+        String passwordConditions = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!Pattern.matches(passwordConditions, password)) {
+            throw new IllegalArgumentException("Password must be at least 8 characters and contain an uppercase, number and symbol.");
+        }
+        return true;
+    }
+    
     public void loadData(){
         try{
             loadFiles();
