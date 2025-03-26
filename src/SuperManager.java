@@ -9,8 +9,8 @@ interface ManagerRole {
 
 public class SuperManager implements ManagerRole {
 	
-	protected String username; //If needed we can hardcode a set superManager name (as there will only ever be one)
-	protected String password; //Same for password
+	protected String username = "SUPERMAN"; //If needed we can hardcode a set superManager name (as there will only ever be one)
+	protected String password = "123456789"; //Same for password
 	
 	private static volatile SuperManager instance;
 	private static final Object lock = new Object(); //Lock object used for synchronization such that we can implement double-checked locking

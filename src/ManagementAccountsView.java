@@ -79,7 +79,7 @@ public class ManagementAccountsView extends JPanel {
 
     //temp method for filling the view without actual data
     public static void populatePendingAccounts() throws Exception {
-        ArrayList<User> pendingUsers = new ArrayList<>();
+        accountListModel.removeAllElements();//without this previous accounts stack on top of each other
         CsvReader reader = new CsvReader(MainSystem.userFilePath);
         reader.readHeaders();
         while(reader.readRecord()){
@@ -121,11 +121,13 @@ public class ManagementAccountsView extends JPanel {
         try {
             CsvReader reader = new CsvReader(MainSystem.userFilePath);
             reader.readHeaders();
-            if(reader.get("email").equals(user)){
-                MainSystem.getInstance().approveAccount(user, approved);
-                MainSystem.getInstance().updateFile(MainSystem.userFilePath);//update file
-                populatePendingAccounts();//reload the view
-                return;
+            while(reader.readRecord()){
+                if(reader.get("email").equals(user)){
+                    MainSystem.getInstance().approveAccount(user, approved);
+                    MainSystem.getInstance().updateFile(MainSystem.userFilePath);//update file
+                    populatePendingAccounts();//reload the view
+                    return;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

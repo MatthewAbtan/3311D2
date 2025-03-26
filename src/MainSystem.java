@@ -9,6 +9,7 @@ public class MainSystem {
     private static MainSystem instance;
     //need to track who is logged in
     public static User currentUser;
+    public static ManagerRole currentManager;
     //file for storing user info
     public static final String userFilePath = "data/userData.csv";
     //file for storing maanger accounts
@@ -17,8 +18,8 @@ public class MainSystem {
     public static final String lotFilePath = "data/lotData.csv";
     public static final String parkingSpaceFilePath = "data/parkingSpaceData.csv";
 
-    private ArrayList<ParkingLot> lots = new ArrayList<>();
-    private ArrayList<Manager> managers = new ArrayList<>();
+    public ArrayList<ParkingLot> lots = new ArrayList<>();
+    public static ArrayList<Manager> managers = new ArrayList<>();
     private ArrayList<User> approvedUsers = new ArrayList<>();
     private ArrayList<User> pendingUsers = new ArrayList<>();
     private UserFactory userFactory = new UserFactory();
@@ -206,6 +207,17 @@ public class MainSystem {
                     break;
                 }
             }
+        }
+    }
+    public void updateAllFiles(){
+        System.out.println("Updating all files...");
+        try{
+            updateFile(userFilePath);
+            updateFile(managerFilePath);
+            updateFile(lotFilePath);
+            updateFile(parkingSpaceFilePath);
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     //this updates whatever file you call this method with

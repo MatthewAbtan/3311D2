@@ -100,7 +100,7 @@ Lot 1,97,EmptyState,Empty,Empty
 Lot 1,98,EmptyState,Empty,Empty
 Lot 1,99,EmptyState,Empty,Empty
 Lot 2,0,EmptyState,Empty,Empty
-Lot 2,1,EmptyState,Empty,Empty
+Lot 2,1,OccupiedState,Josh,1233
 Lot 2,2,EmptyState,Empty,Empty
 Lot 2,3,EmptyState,Empty,Empty
 Lot 2,4,EmptyState,Empty,Empty

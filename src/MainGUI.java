@@ -28,6 +28,7 @@ public class MainGUI extends JFrame{
         mainPanel.add(new ManagementDashboard(this::switchTo),"ManagementDashboard");
         mainPanel.add(new ManagementAccountsView(this::switchTo), "AccountsView");
         mainPanel.add(new ManagementLotsView(this::switchTo), "LotsView");
+        mainPanel.add(new GenerateAccountView(this::switchTo), "GenerateAccountView");
         cardLayout.show(mainPanel,"Login");
         this.add(mainPanel);
 
@@ -37,13 +38,13 @@ public class MainGUI extends JFrame{
 
 //we pass this method to each panel, allows us to change panels
 public void switchTo(String panel){
-        if(Objects.equals(panel, "UserBookings")){//only trigger this when switching to user bookings in order to dynamically update
-            try {
-                UserBookingsView.populateUserBookings();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    if(Objects.equals(panel, "UserBookings")){//only trigger this when switching to user bookings in order to dynamically update
+        try {
+            UserBookingsView.populateUserBookings();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
     // Check if we're switching to UserBookLot
     if(Objects.equals(panel, "UserBookLot")){
         // Remove the existing UserBookLot panel if it exists
@@ -64,6 +65,17 @@ public void switchTo(String panel){
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    if(Objects.equals(panel, "GenerateAccountView")){
+        try {
+            GenerateAccountView.populateAccounts();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    //update all files when anyone switches to a dash board, done to save data more often
+    if(Objects.equals(panel, "UserDashboard") || Objects.equals(panel, "ManagementDashboard")){
+        MainSystem.getInstance().updateFile(MainSystem.userFilePath);
     }
 
     cardLayout.show(mainPanel,panel);

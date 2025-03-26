@@ -116,6 +116,7 @@ public class UserBookingsView extends JPanel {
 
     //temp method for filling the view without actual data
     public static void populateUserBookings() throws Exception{
+        bookingListModel.removeAllElements();//without this previous bookings stack on top of each other
         CsvReader reader = new CsvReader("data/parkingSpaceData.csv");
         reader.readHeaders();
         while(reader.readRecord()){

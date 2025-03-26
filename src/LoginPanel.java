@@ -147,16 +147,25 @@ public class LoginPanel extends JPanel {
                     actionMessage.setText("Username already exists, please try again.");
                     actionMessage.setForeground(new Color(128, 0, 0));
                     displayMessage();
-                }else{
+                }else if(MainSystem.getInstance().validateFields(usernameField.getText(), passwordField.getText())){
                     if(userTypeDropdown.getSelectedItem().equals("Visitor")){
                         mainSystem.registerAccount("Visitor", usernameField.getText(), passwordField.getText()); //register in main system
                         actionMessage.setText("Visitor account created, please login to continue.");
+                        mainSystem.updateFile(mainSystem.userFilePath);
                     }else{
                         mainSystem.registerAccount(userTypeDropdown.getSelectedItem().toString(), usernameField.getText(), passwordField.getText()); //register in main system
                         actionMessage.setText(userTypeDropdown.getSelectedItem() + " account created, requires approval from administrator.");
+                        mainSystem.updateFile(mainSystem.userFilePath);
                     }
                     actionMessage.setForeground(new Color(0, 128, 0));
                     displayMessage();
+                }else{
+                    actionMessage.setText("<html>Username/Password format invalid, please try again.<br>Username must be an email<br>Password must be at least 8 characters and contain an uppercase, number, and symbol.</html>");
+                    actionMessage.setForeground(new Color(128, 0, 0));
+                    actionMessage.setVisible(true);
+                    Timer timer = new Timer(8000, event -> actionMessage.setVisible(false));
+                    timer.setRepeats(false);
+                    timer.start();
                 }
             } else { //they are logging in
                 // simulate login success
@@ -195,18 +204,34 @@ public class LoginPanel extends JPanel {
                     ArrayList<Manager> maangers = mainSystem.getManagers();
                     for(Manager m : maangers){
                         if(m.getUsername().equals(usernameField.getText()) && m.getPassword().equals(passwordField.getText())){
-                            actionMessage.setText("Login successful.");
+                            actionMessage.setText(" Manager Login successful.");
                             actionMessage.setForeground(new Color(0, 128, 0));
                             actionMessage.setVisible(true);
                             //added a timer to login after 1.5 swcond delay
                             Timer timer = new Timer(1000, event -> {
                                 actionMessage.setVisible(false);
+                                MainSystem.currentManager = m;
                                 switchTo.accept("ManagementDashboard");
                             });
                             timer.setRepeats(false);
                             timer.start();
                             return;
                         }
+                    }
+                    //super manager login
+                    if(usernameField.getText().equals("SUPERMAN") && passwordField.getText().equals("123456789")){
+                        actionMessage.setText("Super Manager Login successful.");
+                        actionMessage.setForeground(new Color(0, 128, 0));
+                        actionMessage.setVisible(true);
+                        //added a timer to login after 1.5 swcond delay
+                        Timer timer = new Timer(1000, event -> {
+                            actionMessage.setVisible(false);
+                            MainSystem.currentManager = SuperManager.getInstance();
+                            switchTo.accept("ManagementDashboard");
+                        });
+                        timer.setRepeats(false);
+                        timer.start();
+                        return;
                     }
                     actionMessage.setText("Username/Password combination invalid, please try again.");
                     actionMessage.setForeground(new Color(128, 0, 0));

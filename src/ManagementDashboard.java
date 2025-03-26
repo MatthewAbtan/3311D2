@@ -73,14 +73,17 @@ public class ManagementDashboard extends JPanel {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(e -> {
             //for now this will always restrict access, I will implement this later
-            if (!restrictAccess.isVisible()) {
+            if (MainSystem.currentManager == SuperManager.getInstance()) {
+                System.out.println("Super manager access granted.");
+                switchTo.accept("GenerateAccountView");
+
+            }else{
                 restrictAccess.setVisible(true);
 
                 //timer allows the error to only show for one second
                 Timer timer = new Timer(1000, event -> restrictAccess.setVisible(false));
                 timer.setRepeats(false);
                 timer.start();
-
             }
         });
         return button;

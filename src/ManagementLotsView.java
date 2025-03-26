@@ -1,9 +1,12 @@
+import com.sun.tools.javac.Main;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class ManagementLotsView extends JPanel {
-
+    private ArrayList<ParkingLot> parkinglots = MainSystem.getInstance().getLots();
     private DefaultListModel<String> lotListModel;
     private JList<String> lotList;
     private JPanel spacePanel;
@@ -28,10 +31,13 @@ public class ManagementLotsView extends JPanel {
         lotList = new JList<>(lotListModel);
         lotList.setFont(new Font("SansSerif", Font.PLAIN, 16));
 
+        loadLots();
+
         // listener for the list of lots
         lotList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && lotList.getSelectedValue() != null) { //only trigger is an actual lot is selected
-                loadSpacesForLot(lotList.getSelectedValue());
+                int selectedLotIndex = lotList.getSelectedIndex();
+                loadSpacesForLot(selectedLotIndex);
             }
         });
 
@@ -67,41 +73,70 @@ public class ManagementLotsView extends JPanel {
     private void onAddParkingLot() {
         String newLotName = JOptionPane.showInputDialog(this, "Enter Parking Lot Name:");
         if (newLotName != null && !newLotName.trim().isEmpty()) {
-            lotListModel.addElement(newLotName + " (100 Spaces)");
+            MainSystem.getInstance().lots.add(new ParkingLot(newLotName));
+            this.parkinglots = MainSystem.getInstance().getLots();
+            lotListModel.addElement(newLotName);
         }
     }
 
     //method for loading parking spaces
-    private void loadSpacesForLot(String lot) {
+    private void loadSpacesForLot(int lot) {
         spacePanel.removeAll(); // clear previous spaces
 
-        // this is a temporary way to add example spaces, will update later
-        for (int i = 1; i <= 100; i++) {
-            JButton spaceButton = new JButton("S" + i);
-            spaceButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            spaceButton.setBackground(GREEN);
-            spaceButton.setOpaque(true);
-            spaceButton.setBorderPainted(false);
+        ParkingSpace[] spaces = parkinglots.get(lot).getSpaces();
+        for (ParkingSpace space : spaces) {
+            JButton bt = new JButton(String.valueOf(space.getIndex()));
+            if (space.getState().getClass().getSimpleName().equals("EmptyState")) {
+                bt.setBackground(GREEN);
+                bt.addActionListener(e -> {
+                    //fill with options
+                    toggleSpace((JButton) e.getSource(), lot);
 
-            // add action listener to toggle spaces
-            spaceButton.addActionListener(e -> toggleSpace((JButton) e.getSource()));
+                });
+            }else if(space.getState().getClass().getSimpleName().equals("MaintenanceState")){
+                bt.setBackground(Color.ORANGE);
+                bt.addActionListener(e -> {
+                    //edit options
+                    toggleSpace((JButton) e.getSource(), lot);
+                });
+            }else if(space.getState().getClass().getSimpleName().equals("OccupiedState")){
+                bt.setBackground(RED);
+                bt.addActionListener(e -> {
+                    //edit options
+                    JOptionPane.showMessageDialog(null, "Space is booked and therefore can not be edited.");
+                });
+            }
+            bt.setOpaque(true);
+            bt.setBorderPainted(false);
 
-            spacePanel.add(spaceButton);
+            spacePanel.add(bt);
         }
-
         // Refresh the space panel
         spacePanel.revalidate();
         spacePanel.repaint();
     }
+    //call this when making the panel, as well as when new lots are made
+    private void loadLots(){
+        for (ParkingLot lot : this.parkinglots) {
+            if (lot.getEnabled()) {// only show user the lot if its enabled
+                lotListModel.addElement(lot.getLotName());
+            }
+        }
+    }
 
     //method for toggles between available and unavailable spaces, might change how this works when I implement more code
-    private void toggleSpace(JButton spaceButton) {
+    private void toggleSpace(JButton spaceButton, int lotIndex) {
+        ParkingLot lot = parkinglots.get(lotIndex);
+
         if (spaceButton.getBackground().equals(GREEN)) {
-            spaceButton.setBackground(RED); // Disable the space
+            spaceButton.setBackground(Color.ORANGE); // Disable the space
+            lot.setSpace(Integer.parseInt(spaceButton.getText()), "MaintenanceState", "Empty", "Empty");
             JOptionPane.showMessageDialog(this, spaceButton.getText() + " is disabled for maintenance.");
         } else {
             spaceButton.setBackground(GREEN); // Enable the space
+            lot.setSpace(Integer.parseInt(spaceButton.getText()), "EmptyState", "Empty", "Empty");
             JOptionPane.showMessageDialog(this, spaceButton.getText() + " is now available.");
         }
+        loadSpacesForLot(lotIndex); //refresh the lot
     }
 }
